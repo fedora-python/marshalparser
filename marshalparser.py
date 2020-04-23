@@ -72,7 +72,13 @@ class MarshalParser:
             self.references.append(None)
 
         bytestring = b.to_bytes(1, byteorder)
-        type = types[bytestring]
+        try:
+            type = types[bytestring]
+        except KeyError:
+            print(f"Cannot read/parse byte {bytestring} on possition {i}")
+            print("Might be error or unsupported TYPE")
+            print(self.output)
+            sys.exit(1)
         self.record_object_start(i, b, ref_id)
 
         # Increase indentation
@@ -154,12 +160,7 @@ class MarshalParser:
 
         # decrease indentation
         self.indent -= 2
-
-        try:
-            self.record_object_result(result)
-        except UnboundLocalError:
-            print(f"Cannot read {types[bytestring]}")
-            sys.exit(1)
+        self.record_object_result(result)
 
         # Save the result to the self.references
         if ref_id is not None:
