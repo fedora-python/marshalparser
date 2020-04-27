@@ -83,7 +83,8 @@ Content is the same, nothing to fix…
 
 ## Python support
 
-The code works with Python 3.8
+The code works with Python 3.8 but it should be easy to adjust it for Python 3.7. The only difference are
+position-only arguments in code objects since Python 3.8.
 
 ## Supported object types
 
