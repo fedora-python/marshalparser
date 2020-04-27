@@ -1,6 +1,8 @@
 from bits import testBit, clearBit, bytes_to_float, bytes_to_int
+from collections import namedtuple
+from dataclasses import dataclass
 from sys import byteorder
-from types import types
+from object_types import types
 import binascii
 import sys
 
@@ -10,6 +12,17 @@ elif sys.version_info >= (3, 3):
     PYC_HEADER_LEN = 12
 else:
     PYC_HEADER_LEN = 8
+
+# Flag_ref = namedtuple("Flag_ref", ["byte", "type", "content", "usages"])
+Reference = namedtuple("Reference", ["byte", "index"])
+
+
+@dataclass
+class Flag_ref:
+    byte: int
+    type: str
+    content: object
+    usages: int = 0
 
 
 class MarshalParser:
@@ -26,7 +39,8 @@ class MarshalParser:
         self.iterator = iterator
 
     def parse(self):
-        self.references = []
+        self.references = []  # references to existing objects with FLAG_REF
+        self.flag_refs = []  # objects with FLAG_REF on
         self.output = ""
         self.indent = 0
         self.read_object()
@@ -68,8 +82,8 @@ class MarshalParser:
         if testBit(b, 7):
             b = clearBit(b, 7)
             # Save a slot in global references
-            ref_id = len(self.references)
-            self.references.append(None)
+            ref_id = len(self.flag_refs)
+            self.flag_refs.append(None)
 
         bytestring = b.to_bytes(1, byteorder)
         try:
@@ -139,7 +153,9 @@ class MarshalParser:
 
         elif type == "TYPE_REF":
             index = self.read_long()
-            result = f"REF to {index}: " + str(self.references[index])
+            self.references.append(Reference(byte=i, index=ref_id))
+            self.flag_refs[index].usages += 1
+            result = f"REF to {index}: " + str(self.flag_refs[index])
 
         elif type == "TYPE_BINARY_FLOAT":
             result = bytes_to_float(self.read_bytes(count=8))
@@ -164,7 +180,8 @@ class MarshalParser:
 
         # Save the result to the self.references
         if ref_id is not None:
-            self.references[ref_id] = result
+            self.flag_refs[ref_id] = Flag_ref(byte=i, type=type,
+                                              content=result)
 
         return result
 
@@ -214,6 +231,13 @@ class MarshalParser:
 
         return co
 
+    def unused_ref_flags(self):
+        unused = []
+        for index, flag_ref in enumerate(self.flag_refs):
+            if flag_ref.usages == 0:
+                unused.append((index, flag_ref))
+        return unused
+
 
 def main():
     file = sys.argv[1]
@@ -221,6 +245,10 @@ def main():
     parser = MarshalParser(file)
     parser.parse()
     print(parser.output)
+    unused = parser.unused_ref_flags()
+    if unused:
+        print("Unused FLAG_REFs:")
+        print("\n".join([f"{i} - {f}" for i, f in unused]))
 
 
 if __name__ == "__main__":
