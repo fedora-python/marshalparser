@@ -9,11 +9,13 @@ help me to solve issues with non-reproducible `.pyc` files.
 
 ## Parser in action
 
+### Printing parsed content in a human-readable way
+
 The current version of parser creates a human-readable list of parsed objects
 with info about bytes where objects start and about their content:
 
 ```
-$ python3.8 marshalparser.py test/data/list_of_simple_objects.dat
+$ python3.8 marshalparser.py -p test/data/list_of_simple_objects.dat
 n=0 byte=(b'5b', b'[', 0b1011011) TYPE_LIST REF[0]
   tuple/list/set size: 4
   n=5 byte=(b'54', b'T', 0b1010100) TYPE_TRUE
@@ -31,8 +33,8 @@ The same for `.pyc` files but they are more complex as they contain code objects
 
 ```
 $ cd test/python && python3.8 -c "import test_module" && cd ../..
-$ python3.8 marshalparser.py test/python/__pycache__/test_module.cpython-38.pyc
-n=16 byte=(b'63', b'c', 0b1100011) TYPE_CODE REF[0]
+$ python3.8 marshalparser.py -p test/python/__pycache__/test_module.cpython-38.pyc
+n=16 byte=(b'63', b'c', 0b1100011) TYPE_CODE
   n=41 byte=(b'73', b's', 0b1110011) TYPE_STRING
   result=b'd\x00d\x01\x84\x00Z\x00e\x01e\x00\x83\x00\x83\x01\x01\x00e\x00\x83\x00\\\x02Z\x02Z\x03e\x02e\x03f\x02\x01\x00e\x02e\x03g\x02\x01\x00e\x02e\x03i\x01\x01\x00d\x02S\x00', type=<class 'bytes'>
   n=102 byte=(b'29', b')', 0b101001) TYPE_SMALL_TUPLE
@@ -57,10 +59,11 @@ n=16 byte=(b'63', b'c', 0b1100011) TYPE_CODE REF[0]
 
 ### Unused `FLAG_REF`s
 
-New version of the parser produces also a list of unused `FLAG_REF`s — objects with
+New version of the parser can produce also a list of unused `FLAG_REF`s — objects with
 enabled possibility to refference to them but with zero usage of that possibility.
 
 ```
+$ python3.8 marshalparser.py -u test/python/__pycache__/test_module.cpython-38.pyc
 Unused FLAG_REFs:
 0 - Flag_ref(byte=16, type='TYPE_CODE', content={'argcount': 0, 'posonlyargcount': 0, 'kwonlyargcount': 0, 'nlocals': 0, 'stacksize': 2, 'flags': 64, 'code': b'd\x00d\x01\x84\x00Z\x00e\x01e\x00\x83\x00\x83\x01\x01\x00e\x00\x83\x00\\\x02Z\x02Z\x03e\x02e\x03f\x02\x01\x00e\x02e\x03g\x02\x01\x00e\x02e\x03i\x01\x01\x00d\x02S\x00', 'consts': ({'argcount': 0, 'posonlyargcount': 0, 'kwonlyargcount': 0, 'nlocals': 2, 'stacksize': 2, 'flags': 67, 'code': b'd\x01}\x00d\x02}\x01|\x00|\x01f\x02S\x00', 'consts': (None, 42, 42.8), 'names': (), 'varnames': (b'a', b'b'), 'freevars': "REF to 2: Flag_ref(byte=167, type='TYPE_SMALL_TUPLE', content=(), usages=1)", 'cellvars': "REF to 2: Flag_ref(byte=167, type='TYPE_SMALL_TUPLE', content=(), usages=2)", 'filename': b'/home/lbalhar/Dropbox/Projekty/marshal_parser/test/python/test_module.py', 'name': b'funkce', 'firstlineno': 1, 'lnotab': b'\x00\x01\x04\x01\x04\x01'}, "REF to 6: Flag_ref(byte=261, type='TYPE_SHORT_ASCII_INTERNED', content=b'funkce', usages=1)", None), 'names': ("REF to 6: Flag_ref(byte=261, type='TYPE_SHORT_ASCII_INTERNED', content=b'funkce', usages=2)", b'print', "REF to 3: Flag_ref(byte=171, type='TYPE_SHORT_ASCII_INTERNED', content=b'a', usages=1)", "REF to 4: Flag_ref(byte=174, type='TYPE_SHORT_ASCII_INTERNED', content=b'b', usages=1)"), 'varnames': "REF to 2: Flag_ref(byte=167, type='TYPE_SMALL_TUPLE', content=(), usages=3)", 'freevars': "REF to 2: Flag_ref(byte=167, type='TYPE_SMALL_TUPLE', content=(), usages=4)", 'cellvars': "REF to 2: Flag_ref(byte=167, type='TYPE_SMALL_TUPLE', content=(), usages=5)", 'filename': "REF to 5: Flag_ref(byte=187, type='TYPE_SHORT_ASCII', content=b'/home/lbalhar/Dropbox/Projekty/marshal_parser/test/python/test_module.py', usages=1)", 'name': b'<module>', 'firstlineno': 1, 'lnotab': b'\x08\x06\n\x02\n\x02\x08\x01\x08\x01'}, usages=0)
 1 - Flag_ref(byte=153, type='TYPE_INT', content=42, usages=0)
@@ -70,16 +73,22 @@ Unused FLAG_REFs:
 
 ### Fixed `.pyc` file
 
-If there is at least one unused `FLAG_REF` a new `.pyc` file is produces where this is disabled and all references
+If there is at least one unused `FLAG_REF` it can also produce a `.pyc`  where this is disabled and all references
 are recalculated.
 
 ```
-$ cd test/python && python3.8 -c "import test_module" && cd ../..
-$ python3.8 marshalparser.py test/python/__pycache__/test_module.cpython-38.pyc
-$ python3.8 marshalparser.py test/python/__pycache__/test_module.cpython-38.fixed.pyc
-…
-Content is the same, nothing to fix…
+$ python3.8 marshalparser.py -u test/python/__pycache__/test_module.cpython-38.pyc
+Unused FLAG_REFs:
+0 - Flag_ref(byte=16, type='TYPE_CODE', content={'argcount': 0, 'posonlyargcount': 0, 'kwonlyargcount': 0, 'nlocals': 0, 'stacksize': 2, 'flags': 64, 'code': b'd\x00d\x01\x84\x00Z\x00e\x01e\x00\x83\x00\x83\x01\x01\x00e\x00\x83\x00\\\x02Z\x02Z\x03e\x02e\x03f\x02\x01\x00e\x02e\x03g\x02\x01\x00e\x02e\x03i\x01\x01\x00d\x02S\x00', 'consts': ({'argcount': 0, 'posonlyargcount': 0, 'kwonlyargcount': 0, 'nlocals': 2, 'stacksize': 2, 'flags': 67, 'code': b'd\x01}\x00d\x02}\x01|\x00|\x01f\x02S\x00', 'consts': (None, 42, 42.8), 'names': (), 'varnames': (b'a', b'b'), 'freevars': "REF to 2: Flag_ref(byte=167, type='TYPE_SMALL_TUPLE', content=(), usages=1)", 'cellvars': "REF to 2: Flag_ref(byte=167, type='TYPE_SMALL_TUPLE', content=(), usages=2)", 'filename': b'/home/lbalhar/Dropbox/Projekty/marshal_parser/test/python/test_module.py', 'name': b'funkce', 'firstlineno': 1, 'lnotab': b'\x00\x01\x04\x01\x04\x01'}, "REF to 6: Flag_ref(byte=261, type='TYPE_SHORT_ASCII_INTERNED', content=b'funkce', usages=1)", None), 'names': ("REF to 6: Flag_ref(byte=261, type='TYPE_SHORT_ASCII_INTERNED', content=b'funkce', usages=2)", b'print', "REF to 3: Flag_ref(byte=171, type='TYPE_SHORT_ASCII_INTERNED', content=b'a', usages=1)", "REF to 4: Flag_ref(byte=174, type='TYPE_SHORT_ASCII_INTERNED', content=b'b', usages=1)"), 'varnames': "REF to 2: Flag_ref(byte=167, type='TYPE_SMALL_TUPLE', content=(), usages=3)", 'freevars': "REF to 2: Flag_ref(byte=167, type='TYPE_SMALL_TUPLE', content=(), usages=4)", 'cellvars': "REF to 2: Flag_ref(byte=167, type='TYPE_SMALL_TUPLE', content=(), usages=5)", 'filename': "REF to 5: Flag_ref(byte=187, type='TYPE_SHORT_ASCII', content=b'/home/lbalhar/Dropbox/Projekty/marshal_parser/test/python/test_module.py', usages=1)", 'name': b'<module>', 'firstlineno': 1, 'lnotab': b'\x08\x06\n\x02\n\x02\x08\x01\x08\x01'}, usages=0)
+1 - Flag_ref(byte=153, type='TYPE_INT', content=42, usages=0)
+7 - Flag_ref(byte=297, type='TYPE_SHORT_ASCII_INTERNED', content=b'print', usages=0)
+8 - Flag_ref(byte=334, type='TYPE_SHORT_ASCII_INTERNED', content=b'<module>', usages=0)
+$ python3.8 marshalparser.py -f test/python/__pycache__/test_module.cpython-38.pyc
+$ python3.8 marshalparser.py -u test/python/__pycache__/test_module.cpython-38.fixed.pyc
+<empty output>
 ```
+
+Or overwrite existing `.pyc` with `-fo`.
 
 ## Python support
 

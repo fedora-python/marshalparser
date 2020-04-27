@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from sys import byteorder
 from pathlib import Path
 from object_types import types
+import argparse
 import binascii
 import sys
 
@@ -280,17 +281,37 @@ class MarshalParser:
 
 
 def main():
-    file = Path(sys.argv[1])
+    parser = argparse.ArgumentParser(
+               description='Marshalparser and fixer for .pyc files'
+            )
+    parser.add_argument("-p", "--print", action="store_true", dest="print",
+                        default=False,
+                        help="Print human-readable parser output")
+    parser.add_argument("-u", "--unused", action="store_true", dest="unused",
+                        default=False,
+                        help="Print unused references")
+    parser.add_argument("-f", "--fix", action="store_true", dest="fix",
+                        default=False,
+                        help="Fix references")
+    parser.add_argument("-o", "--overwrite", action="store_true",
+                        dest="overwrite", default=False,
+                        help="Overwrite existing pyc file (works with --fix)")
+    parser.add_argument(metavar='file', dest="file")
 
-    parser = MarshalParser(file)
+    args = parser.parse_args()
+
+    parser = MarshalParser(Path(args.file))
     parser.parse()
-    print(parser.output)
-    unused = parser.unused_ref_flags()
-    if unused:
-        print("Unused FLAG_REFs:")
-        print("\n".join([f"{i} - {f}" for i, f in unused]))
+    if args.print:
+        print(parser.output)
+    if args.unused:
+        unused = parser.unused_ref_flags()
+        if unused:
+            print("Unused FLAG_REFs:")
+            print("\n".join([f"{i} - {f}" for i, f in unused]))
 
-    parser.clear_unused_ref_flags()
+    if args.fix:
+        parser.clear_unused_ref_flags(overwrite=args.overwrite)
 
 
 if __name__ == "__main__":
