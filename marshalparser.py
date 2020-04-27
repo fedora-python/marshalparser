@@ -2,6 +2,7 @@ from bits import testBit, clearBit, bytes_to_float, bytes_to_int
 from collections import namedtuple
 from dataclasses import dataclass
 from sys import byteorder
+from pathlib import Path
 from object_types import types
 import binascii
 import sys
@@ -30,9 +31,10 @@ class MarshalParser:
         self.filename = filename
 
         with open(filename, "rb") as fh:
-            iterator = enumerate(bytes(fh.read()))
+            self.bytes = bytes(fh.read())
+            iterator = enumerate(self.bytes)
             # skip pyc header (first n bytes)
-            if filename.endswith(".pyc"):
+            if filename.suffix == ".pyc":
                 for x in range(PYC_HEADER_LEN):
                     next(iterator)
 
@@ -153,7 +155,7 @@ class MarshalParser:
 
         elif type == "TYPE_REF":
             index = self.read_long()
-            self.references.append(Reference(byte=i, index=ref_id))
+            self.references.append(Reference(byte=i, index=index))
             self.flag_refs[index].usages += 1
             result = f"REF to {index}: " + str(self.flag_refs[index])
 
@@ -238,9 +240,47 @@ class MarshalParser:
                 unused.append((index, flag_ref))
         return unused
 
+    def clear_unused_ref_flags(self, overwrite=False):
+        # List of flag_refs and references ordered by number of byte in a file
+        final_list = self.flag_refs + self.references
+        final_list.sort(key=lambda x: x.byte)
+        # a map where at a beginning, index in list == number of flag_ref
+        # but when unused flag is removed:
+        # - numbers in the list are original numbers of flag_refs
+        # - indexes of the list are new numbers
+        flag_ref_map = list(range(len(self.flag_refs)))
+        # new mutable content
+        content = bytearray(self.bytes)
+
+        for r in final_list:
+            if isinstance(r, Flag_ref) and r.usages == 0:
+                # Clear FLAG_REF bit and remove it from map
+                # all subsequent refs will have lower index in the map
+                flag_ref_map.remove(self.flag_refs.index(r))
+                content[r.byte] = clearBit(content[r.byte], 7)
+            elif isinstance(r, Reference):
+                # Find a new index of flag_ref after some was removed
+                new_index = flag_ref_map.index(r.index)
+                # write new number as 4-byte integer
+                content[r.byte+1:r.byte+5] = new_index.to_bytes(4, byteorder)
+
+        # Skip writing if there is no difference
+        if bytes(content) != self.bytes:
+            if overwrite:
+                suffix = ""
+            else:
+                suffix = ".fixed"
+
+            new_name = self.filename.with_suffix(suffix + self.filename.suffix)
+
+            with open(new_name, mode="wb") as fh:
+                fh.write(content)
+        else:
+            print("Content is the same, nothing to fix…")
+
 
 def main():
-    file = sys.argv[1]
+    file = Path(sys.argv[1])
 
     parser = MarshalParser(file)
     parser.parse()
@@ -249,6 +289,8 @@ def main():
     if unused:
         print("Unused FLAG_REFs:")
         print("\n".join([f"{i} - {f}" for i, f in unused]))
+
+    parser.clear_unused_ref_flags()
 
 
 if __name__ == "__main__":
