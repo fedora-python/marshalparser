@@ -183,8 +183,9 @@ class MarshalParser:
 
         # Save the result to the self.references
         if ref_id is not None:
-            self.flag_refs[ref_id] = Flag_ref(byte=i, type=type,
-                                              content=result)
+            self.flag_refs[ref_id] = Flag_ref(
+                byte=i, type=type, content=result
+            )
 
         return result
 
@@ -263,7 +264,9 @@ class MarshalParser:
                 # Find a new index of flag_ref after some was removed
                 new_index = flag_ref_map.index(r.index)
                 # write new number as 4-byte integer
-                content[r.byte+1:r.byte+5] = new_index.to_bytes(4, byteorder)
+                content[r.byte + 1 : r.byte + 5] = new_index.to_bytes(
+                    4, byteorder
+                )
 
         # Skip writing if there is no difference
         if bytes(content) != self.bytes:
@@ -282,21 +285,41 @@ class MarshalParser:
 
 def main():
     parser = argparse.ArgumentParser(
-               description='Marshalparser and fixer for .pyc files'
-            )
-    parser.add_argument("-p", "--print", action="store_true", dest="print",
-                        default=False,
-                        help="Print human-readable parser output")
-    parser.add_argument("-u", "--unused", action="store_true", dest="unused",
-                        default=False,
-                        help="Print unused references")
-    parser.add_argument("-f", "--fix", action="store_true", dest="fix",
-                        default=False,
-                        help="Fix references")
-    parser.add_argument("-o", "--overwrite", action="store_true",
-                        dest="overwrite", default=False,
-                        help="Overwrite existing pyc file (works with --fix)")
-    parser.add_argument(metavar='file', dest="file")
+        description="Marshalparser and fixer for .pyc files"
+    )
+    parser.add_argument(
+        "-p",
+        "--print",
+        action="store_true",
+        dest="print",
+        default=False,
+        help="Print human-readable parser output",
+    )
+    parser.add_argument(
+        "-u",
+        "--unused",
+        action="store_true",
+        dest="unused",
+        default=False,
+        help="Print unused references",
+    )
+    parser.add_argument(
+        "-f",
+        "--fix",
+        action="store_true",
+        dest="fix",
+        default=False,
+        help="Fix references",
+    )
+    parser.add_argument(
+        "-o",
+        "--overwrite",
+        action="store_true",
+        dest="overwrite",
+        default=False,
+        help="Overwrite existing pyc file (works with --fix)",
+    )
+    parser.add_argument(metavar="file", dest="file")
 
     args = parser.parse_args()
 
