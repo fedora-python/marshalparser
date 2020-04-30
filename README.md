@@ -90,6 +90,14 @@ $ python3.8 marshalparser.py -u test/python/__pycache__/test_module.cpython-38.f
 
 Or overwrite existing `.pyc` with `-fo`.
 
+## Tests
+
+Tests use pytest and `/test/python_stdlib/` cotains tens of random `pyc` files from Python standard library
+(python3-libs) RPM package in Fedora.
+
+Tests check that the parser is able to parse/fix a `pyc` file and the that the unmarshaled code object is the same
+in both files (original and fixed).
+
 ## Python support
 
 The code works with Python 3.8 but it should be easy to adjust it for Python 3.7. The only difference are
