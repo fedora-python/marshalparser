@@ -2,6 +2,7 @@ import marshal
 
 data = {
     "integer": 42,
+    "longs": (25487958525413698547, 1 << 64),
     "float": 42.88,
     "string": "hello world",
     "list_of_simple_objects": [True, False, None, ...],
