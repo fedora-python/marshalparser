@@ -109,7 +109,7 @@ position-only arguments in code objects since Python 3.8.
 * ✓ TYPE_BINARY_FLOAT
 * ✘ TYPE_COMPLEX (only in marshal version 1)
 * ✓ TYPE_BINARY_COMPLEX
-* ✓ TYPE_LONG
+* ✓ TYPE_LONG (Parsed to digits but not reconstructed to PyLong)
 * ✓ TYPE_STRING
 * ? TYPE_INTERNED (no idea where it is and how to test it)
 * ✓ TYPE_REF
@@ -117,7 +117,7 @@ position-only arguments in code objects since Python 3.8.
 * ✓ TYPE_LIST
 * ✓ TYPE_DICT
 * ✓ TYPE_CODE
-* ? TYPE_UNICODE (only in marshal version < 3)
+* ✓ TYPE_UNICODE
 * ? TYPE_UNKNOWN (no idea how to test unknown bytes-like objects as a bytes object)
 * ✓ TYPE_SET
 * ✓ TYPE_FROZENSET

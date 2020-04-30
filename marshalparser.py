@@ -15,6 +15,12 @@ elif sys.version_info >= (3, 3):
 else:
     PYC_HEADER_LEN = 8
 
+PyLong_SHIFT = 30  # Should be only 15 for 32bit arch
+PyLong_MARSHAL_SHIFT = 15
+PyLong_MARSHAL_RATIO = round(PyLong_SHIFT / PyLong_MARSHAL_SHIFT)
+
+DEBUG = False
+
 # Flag_ref = namedtuple("Flag_ref", ["byte", "type", "content", "usages"])
 Reference = namedtuple("Reference", ["byte", "index"])
 
@@ -59,6 +65,8 @@ class MarshalParser:
         if ref_id is not None:
             ref = f"REF[{ref_id}]"
         line = f"n={i} byte=({byte}, {bytestring}, {bin(b)}) {type} {ref}\n"
+        if DEBUG:
+            print(line)
         self.output += " " * self.indent + line
 
     def record_object_result(self, result):
@@ -92,7 +100,7 @@ class MarshalParser:
         try:
             type = types[bytestring]
         except KeyError:
-            print(f"Cannot read/parse byte {bytestring} on possition {i}")
+            print(f"Cannot read/parse byte {b} {bytestring} on possition {i}")
             print("Might be error or unsupported TYPE")
             print(self.output)
             sys.exit(1)
@@ -104,10 +112,13 @@ class MarshalParser:
         if type == "TYPE_CODE":
             result = self.read_codeobject()
 
-        elif type in ("TYPE_LONG", "TYPE_INT"):
+        elif type == "TYPE_LONG":
+            result = self.read_py_long()
+
+        elif type in ("TYPE_INT"):
             result = self.read_long()
 
-        elif type == "TYPE_STRING":
+        elif type in ("TYPE_STRING", "TYPE_UNICODE", "TYPE_ASCII"):
             result = self.read_string()
 
         elif type == "TYPE_SMALL_TUPLE":
@@ -183,7 +194,7 @@ class MarshalParser:
             self.record_object_result(result)
         except UnboundLocalError:
             raise RuntimeError(
-                f"Error: type [{type}] is recognized but result is not present!"
+                f"Error: type [{type}] is recognized but result is not present"
             )
 
         # Save the result to the self.references
@@ -216,6 +227,37 @@ class MarshalParser:
     def read_long(self):
         bytes = self.read_bytes(count=4)
         return bytes_to_int(bytes)
+
+    def read_short(self):
+        b = self.read_bytes(count=2)
+        x = b[0]
+        x |= b[1] << 8
+        # Sign-extension, in case short greater than 16 bits
+        x |= -(x & 0x8000)
+        return x
+
+    def read_py_long(self):
+        n = self.read_long()
+        size = int(round(1 + (abs(n) - 1) / PyLong_MARSHAL_RATIO))
+        shorts_in_top_digit = int(
+            round(1 + (abs(n) - 1) % PyLong_MARSHAL_RATIO)
+        )
+        digits = [0] * abs(size)
+
+        for i in range(0, size - 1):
+            d = 0
+            for j in range(0, PyLong_MARSHAL_RATIO):
+                md = self.read_short()
+                d += md << j * PyLong_MARSHAL_SHIFT
+            digits[i] = d
+
+        d = 0
+        for j in range(0, shorts_in_top_digit):
+            md = self.read_short()
+            d += md << j * PyLong_MARSHAL_SHIFT
+
+        digits[size - 1] = d
+        return f"PyLong digits f{digits}"
 
     def read_codeobject(self):
         argcount = self.read_long()
