@@ -179,7 +179,12 @@ class MarshalParser:
 
         # decrease indentation
         self.indent -= 2
-        self.record_object_result(result)
+        try:
+            self.record_object_result(result)
+        except UnboundLocalError:
+            raise RuntimeError(
+                f"Error: type [{type}] is recognized but result is not present!"
+            )
 
         # Save the result to the self.references
         if ref_id is not None:
@@ -264,7 +269,7 @@ class MarshalParser:
                 # Find a new index of flag_ref after some was removed
                 new_index = flag_ref_map.index(r.index)
                 # write new number as 4-byte integer
-                content[r.byte + 1 : r.byte + 5] = new_index.to_bytes(
+                content[r.byte + 1:r.byte + 5] = new_index.to_bytes(
                     4, byteorder
                 )
 
