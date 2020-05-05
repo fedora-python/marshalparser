@@ -2,6 +2,7 @@ from glob import glob
 from marshalparser import PYC_HEADER_LEN
 from pathlib import Path
 from subprocess import check_call
+import filecmp
 import marshal
 import os
 import pytest
@@ -36,6 +37,9 @@ def test_complete(filename):
 
     assert result == 0
     assert os.path.isfile(fixed_filename(filename))
+
+    if filecmp.cmp(filename, fixed_filename(filename), shallow=False):
+        pytest.skip("Fixed file is the same as original, nothing to check")
 
     with open(filename, mode="rb") as fh:
         fh.seek(PYC_HEADER_LEN)
