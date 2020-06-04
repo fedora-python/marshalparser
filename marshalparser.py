@@ -15,9 +15,7 @@ elif sys.version_info >= (3, 3):
 else:
     PYC_HEADER_LEN = 8
 
-PyLong_SHIFT = 30  # Should be only 15 for 32bit arch
 PyLong_MARSHAL_SHIFT = 15
-PyLong_MARSHAL_RATIO = round(PyLong_SHIFT / PyLong_MARSHAL_SHIFT)
 
 DEBUG = False
 
@@ -64,7 +62,7 @@ class MarshalParser:
         ref = ""
         if ref_id is not None:
             ref = f"REF[{ref_id}]"
-        line = f"n={i} byte=({byte}, {bytestring}, {bin(b)}) {type} {ref}\n"
+        line = f"n={i}/{hex(i)} byte=({byte}, {bytestring}, {bin(b)}) {type} {ref}\n"
         if DEBUG:
             print(line)
         self.output += " " * self.indent + line
@@ -224,9 +222,9 @@ class MarshalParser:
         bytes = self.read_bytes(size)
         return bytes
 
-    def read_long(self):
+    def read_long(self, signed=False):
         bytes = self.read_bytes(count=4)
-        return bytes_to_int(bytes)
+        return bytes_to_int(bytes, signed=signed)
 
     def read_short(self):
         b = self.read_bytes(count=2)
@@ -237,27 +235,13 @@ class MarshalParser:
         return x
 
     def read_py_long(self):
-        n = self.read_long()
-        size = int(round(1 + (abs(n) - 1) / PyLong_MARSHAL_RATIO))
-        shorts_in_top_digit = int(
-            round(1 + (abs(n) - 1) % PyLong_MARSHAL_RATIO)
-        )
-        digits = [0] * abs(size)
+        n = self.read_long(signed=True)
+        result, shift = 0, 0
+        for i in range(abs(n)):
+            result += self.read_short() << shift
+            shift += PyLong_MARSHAL_SHIFT
 
-        for i in range(0, size - 1):
-            d = 0
-            for j in range(0, PyLong_MARSHAL_RATIO):
-                md = self.read_short()
-                d += md << j * PyLong_MARSHAL_SHIFT
-            digits[i] = d
-
-        d = 0
-        for j in range(0, shorts_in_top_digit):
-            md = self.read_short()
-            d += md << j * PyLong_MARSHAL_SHIFT
-
-        digits[size - 1] = d
-        return f"PyLong digits f{digits}"
+        return result if n > 0 else -result
 
     def read_codeobject(self):
         argcount = self.read_long()

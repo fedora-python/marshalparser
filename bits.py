@@ -32,8 +32,8 @@ def toggleBit(int_type, offset):
     return(int_type ^ mask)
 
 
-def bytes_to_int(bytes):
-    return int.from_bytes(bytes, byteorder)
+def bytes_to_int(bytes, signed=False):
+    return int.from_bytes(bytes, byteorder, signed=signed)
 
 
 def bytes_to_float(bytes):
