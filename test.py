@@ -1,13 +1,17 @@
 from glob import glob
-from marshalparser import PYC_HEADER_LEN
 from pathlib import Path
 from subprocess import check_call
 import filecmp
 import marshal
 import os
+import sys
+
 import pytest
 
-PATH = Path("test") / Path("python_stdlib")
+from marshalparser import PYC_HEADER_LEN
+
+PYTHON_VERSION = "{}.{}".format(*sys.version_info[:2])
+PATH = Path("test") / "python_stdlib" / PYTHON_VERSION
 
 
 def fixed_filename(original_filename):
@@ -33,7 +37,9 @@ test_data = generate_test_data()
 
 @pytest.mark.parametrize("filename", test_data)
 def test_complete(filename):
-    result = check_call(["python3.8", "marshalparser.py", "-f", filename])
+    result = check_call(
+        ["python" + PYTHON_VERSION, "marshalparser.py", "-f", filename]
+    )
 
     assert result == 0
     assert os.path.isfile(fixed_filename(filename))
