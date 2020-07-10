@@ -92,16 +92,15 @@ Or overwrite existing `.pyc` with `-fo`.
 
 ## Tests
 
-Tests use pytest and `/test/python_stdlib/` cotains tens of random `pyc` files from Python standard library
-(python3-libs) RPM package in Fedora.
+Tests use pytest and `/test/python_stdlib/3.X` cotains around hundred of random `pyc` files from Python standard library
+(python3-libs or python36 etc.) RPM package in Fedora for each supported Python version.
 
-Tests check that the parser is able to parse/fix a `pyc` file and the that the unmarshaled code object is the same
+Tests check that the parser is able to parse/fix a `pyc` file and then that the unmarshaled code object is the same
 in both files (original and fixed).
 
 ## Python support
 
-The code works with Python 3.8 but it should be easy to adjust it for Python 3.7. The only difference are
-position-only arguments in code objects since Python 3.8.
+The code is tested with Python 3.6+. Python 3.6 itself requires [`dataclasses`](https://pypi.org/project/dataclasses/).
 
 ## Supported object types
 
