@@ -8,9 +8,13 @@ import argparse
 import binascii
 import sys
 
-if sys.version_info >= (3, 7):
+PY33 = sys.version_info >= (3, 3)
+PY37 = sys.version_info >= (3, 7)
+PY38 = sys.version_info >= (3, 8)
+
+if PY37:
     PYC_HEADER_LEN = 16
-elif sys.version_info >= (3, 3):
+elif PY33:
     PYC_HEADER_LEN = 12
 else:
     PYC_HEADER_LEN = 8
@@ -117,7 +121,8 @@ class MarshalParser:
         elif type in ("TYPE_INT"):
             result = self.read_long()
 
-        elif type in ("TYPE_STRING", "TYPE_UNICODE", "TYPE_ASCII"):
+        elif type in ("TYPE_STRING", "TYPE_UNICODE",
+                      "TYPE_ASCII", "TYPE_INTERNED"):
             result = self.read_string()
 
         elif type == "TYPE_SMALL_TUPLE":
@@ -246,7 +251,8 @@ class MarshalParser:
 
     def read_codeobject(self):
         argcount = self.read_long()
-        posonlyargcount = self.read_long()
+        if PY38:
+            posonlyargcount = self.read_long()
         kwonlyargcount = self.read_long()
         nlocals = self.read_long()
         stacksize = self.read_long()

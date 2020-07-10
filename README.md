@@ -119,7 +119,7 @@ position-only arguments in code objects since Python 3.8.
 * ✓ TYPE_BINARY_COMPLEX
 * ✓ TYPE_LONG (Parsed to digits but not reconstructed to PyLong)
 * ✓ TYPE_STRING
-* ? TYPE_INTERNED (no idea where it is and how to test it)
+* ✓ TYPE_INTERNED
 * ✓ TYPE_REF
 * ✓ TYPE_TUPLE
 * ✓ TYPE_LIST
