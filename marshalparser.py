@@ -357,22 +357,23 @@ def main():
         default=False,
         help="Overwrite existing pyc file (works with --fix)",
     )
-    parser.add_argument(metavar="file", dest="file")
+    parser.add_argument(metavar="files", dest="files", nargs="*")
 
     args = parser.parse_args()
 
-    parser = MarshalParser(Path(args.file))
-    parser.parse()
-    if args.print:
-        print(parser.output)
-    if args.unused:
-        unused = parser.unused_ref_flags()
-        if unused:
-            print("Unused FLAG_REFs:")
-            print("\n".join([f"{i} - {f}" for i, f in unused]))
+    for file in args.files:
+        parser = MarshalParser(Path(file))
+        parser.parse()
+        if args.print:
+            print(parser.output)
+        if args.unused:
+            unused = parser.unused_ref_flags()
+            if unused:
+                print("Unused FLAG_REFs:")
+                print("\n".join([f"{i} - {f}" for i, f in unused]))
 
-    if args.fix:
-        parser.clear_unused_ref_flags(overwrite=args.overwrite)
+        if args.fix:
+            parser.clear_unused_ref_flags(overwrite=args.overwrite)
 
 
 if __name__ == "__main__":

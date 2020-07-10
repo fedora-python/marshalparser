@@ -12,6 +12,7 @@ from marshalparser import PYC_HEADER_LEN
 
 PYTHON_VERSION = "{}.{}".format(*sys.version_info[:2])
 PATH = Path("test") / "python_stdlib" / PYTHON_VERSION
+CMD = ["python" + PYTHON_VERSION, "marshalparser.py", "-f"]
 
 
 def fixed_filename(original_filename):
@@ -38,7 +39,7 @@ test_data = generate_test_data()
 @pytest.mark.parametrize("filename", test_data)
 def test_complete(filename):
     result = check_call(
-        ["python" + PYTHON_VERSION, "marshalparser.py", "-f", filename]
+        CMD + [filename]
     )
 
     assert result == 0
@@ -56,3 +57,11 @@ def test_complete(filename):
         fixed = marshal.load(fh)
 
     assert original == fixed
+
+
+three_doubles = [test_data[i:i+2] for i in range(0, 6, 2)]
+
+
+@pytest.mark.parametrize("filenames", three_doubles)
+def test_run_with_more_than_one_file(filenames):
+    check_call(CMD + [*filenames])
