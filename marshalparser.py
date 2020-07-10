@@ -62,7 +62,8 @@ class MarshalParser:
         ref = ""
         if ref_id is not None:
             ref = f"REF[{ref_id}]"
-        line = f"n={i}/{hex(i)} byte=({byte}, {bytestring}, {bin(b)}) {type} {ref}\n"
+        line = f"n={i}/{hex(i)} byte=({byte}, {bytestring}, " \
+               f"{bin(b)}) {type} {ref}\n"
         if DEBUG:
             print(line)
         self.output += " " * self.indent + line
