@@ -6,18 +6,8 @@ import binascii
 import sys
 
 from .bits import testBit, clearBit, bytes_to_float, bytes_to_int
+from .magic import get_pyc_python_version, get_pyc_header_lenght
 from .object_types import types
-
-PY33 = sys.version_info >= (3, 3)
-PY37 = sys.version_info >= (3, 7)
-PY38 = sys.version_info >= (3, 8)
-
-if PY37:
-    PYC_HEADER_LEN = 16
-elif PY33:
-    PYC_HEADER_LEN = 12
-else:
-    PYC_HEADER_LEN = 8
 
 PyLong_MARSHAL_SHIFT = 15
 
@@ -38,13 +28,15 @@ class Flag_ref:
 class MarshalParser:
     def __init__(self, filename):
         self.filename = filename
+        self.python_version = get_pyc_python_version(filename)
+        pyc_header_len = get_pyc_header_lenght(self.python_version)
 
         with open(filename, "rb") as fh:
             self.bytes = bytes(fh.read())
             iterator = enumerate(self.bytes)
             # skip pyc header (first n bytes)
             if filename.suffix == ".pyc":
-                for x in range(PYC_HEADER_LEN):
+                for x in range(pyc_header_len):
                     next(iterator)
 
         self.iterator = iterator
@@ -251,7 +243,7 @@ class MarshalParser:
 
     def read_codeobject(self):
         argcount = self.read_long()
-        if PY38:
+        if self.python_version >= (3, 8):
             posonlyargcount = self.read_long()
         kwonlyargcount = self.read_long()
         nlocals = self.read_long()
