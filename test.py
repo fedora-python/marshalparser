@@ -10,7 +10,6 @@ import pytest
 from marshalparser.magic import get_pyc_python_version
 
 PYTHON_VERSION = "{}.{}".format(*sys.version_info[:2])
-PATH = Path("test") / "python_stdlib"
 CMD = ["python" + PYTHON_VERSION, "-m", "marshalparser", "-f"]
 
 
@@ -23,12 +22,15 @@ def fixed_filename(original_filename):
 def clean():
     # run test first
     yield
-    for fixed_file in glob(str(PATH / "*" / "*.fixed.pyc")):
+    for fixed_file in glob(str(Path("test") / "**" / "*.fixed.*"),
+                           recursive=True):
         os.unlink(fixed_file)
 
 
 def generate_test_data():
-    return glob(str(PATH / "*" / "*.pyc"))
+    python_stdlib = glob(str(Path("test") / "python_stdlib" / "*" / "*.pyc"))
+    pure_marshal = glob(str(Path("test") / "pure_marshal" / "*"))
+    return python_stdlib + pure_marshal
 
 
 test_data = generate_test_data()
@@ -48,8 +50,12 @@ def test_complete(filename):
 
     # To compare two pyc files, we need to use Python
     # they were compiled by
-    python_version = get_pyc_python_version(filename)
-    python_version_str = "{}.{}".format(*python_version)
+    if filename.endswith(".pyc"):
+        python_version = get_pyc_python_version(filename)
+        python_version_str = "{}.{}".format(*python_version)
+    else:
+        # For .dat files, we use the same Python for content check
+        python_version_str = PYTHON_VERSION
     CHECK_CMD = [
         "python" + python_version_str, "marshal_content_check.py", filename,
         fixed_filename(filename)

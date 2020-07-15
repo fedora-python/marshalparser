@@ -28,14 +28,15 @@ class Flag_ref:
 class MarshalParser:
     def __init__(self, filename):
         self.filename = filename
-        self.python_version = get_pyc_python_version(filename)
-        pyc_header_len = get_pyc_header_lenght(self.python_version)
 
         with open(filename, "rb") as fh:
             self.bytes = bytes(fh.read())
             iterator = enumerate(self.bytes)
             # skip pyc header (first n bytes)
             if filename.suffix == ".pyc":
+                self.python_version = get_pyc_python_version(filename)
+                pyc_header_len = get_pyc_header_lenght(self.python_version)
+
                 for x in range(pyc_header_len):
                     next(iterator)
 
