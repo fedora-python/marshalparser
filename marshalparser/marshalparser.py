@@ -42,7 +42,7 @@ class MarshalParser:
         else:
             # Not a pyc file, parse it as a marshal dump without header
             if DEBUG:
-                print("File has no pyc header, parsing as a marshal dump…")
+                print("File has no or unknown pyc header, assuming a marshal dump…")
 
         self.iterator = iterator
 
