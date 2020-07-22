@@ -35,13 +35,14 @@ MAGIC_NUMBERS = {
 
 
 def get_pyc_python_version(filename):
-    """Get the version of Python from pyc header (magic number)"""
+    """Get the version of Python from pyc header (magic number)
+    or None if it cannot be detected"""
     with open(filename, 'rb') as file:
         magic = file.read(4)
-        magic_data = struct.unpack('H2B', magic)
-        python_version = MAGIC_NUMBERS.get(magic_data[0], '')
-        if not python_version:
-            raise RuntimeError('Unknown Python version or wrong magic bytes!')
+
+    magic_data = struct.unpack('H2B', magic)
+    python_version = MAGIC_NUMBERS.get(magic_data[0], None)
+
     return python_version
 
 
