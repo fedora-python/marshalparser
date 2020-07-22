@@ -34,7 +34,7 @@ class MarshalParser:
             iterator = enumerate(self.bytes)
         # if pyc magic number is detected, skip entire
         # pyc header (first n bytes)
-        self.python_version = get_pyc_python_version(filename)
+        self.python_version = get_pyc_python_version(bytes=self.bytes[:4])
         if self.python_version:
             pyc_header_len = get_pyc_header_lenght(self.python_version)
             for x in range(pyc_header_len):

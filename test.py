@@ -51,7 +51,7 @@ def test_complete(filename):
 
     # To compare two pyc files, we need to use Python
     # they were compiled by
-    python_version = get_pyc_python_version(filename)
+    python_version = get_pyc_python_version(filename=filename)
     if python_version:
         python_version_str = "{}.{}".format(*python_version)
         # pass this to marshal_content_check.py so we don't have to

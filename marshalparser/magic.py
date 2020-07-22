@@ -34,11 +34,20 @@ MAGIC_NUMBERS = {
 }
 
 
-def get_pyc_python_version(filename):
+def get_pyc_python_version(*, filename=None, bytes=None):
     """Get the version of Python from pyc header (magic number)
-    or None if it cannot be detected"""
-    with open(filename, 'rb') as file:
-        magic = file.read(4)
+    or None if it cannot be detected. Takes a filename to read
+    or first 4 bytes from it."""
+    magic = None
+
+    if filename:
+        with open(filename, 'rb') as file:
+            magic = file.read(4)
+    elif bytes:
+        magic = bytes
+
+    if not magic:
+        raise RuntimeError("Either filename or bytes has to be specified!")
 
     magic_data = struct.unpack('H2B', magic)
     python_version = MAGIC_NUMBERS.get(magic_data[0], None)
