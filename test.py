@@ -30,7 +30,8 @@ def clean():
 def generate_test_data():
     python_stdlib = glob(str(Path("test") / "python_stdlib" / "*" / "*.pyc"))
     pure_marshal = glob(str(Path("test") / "pure_marshal" / "*"))
-    return python_stdlib + pure_marshal
+    renamed_pycs = glob(str(Path("test") / "renamed_pycs" / "*"))
+    return pure_marshal + renamed_pycs + python_stdlib
 
 
 test_data = generate_test_data()
@@ -50,15 +51,20 @@ def test_complete(filename):
 
     # To compare two pyc files, we need to use Python
     # they were compiled by
-    if filename.endswith(".pyc"):
-        python_version = get_pyc_python_version(filename)
+    python_version = get_pyc_python_version(filename=filename)
+    if python_version:
         python_version_str = "{}.{}".format(*python_version)
+        # pass this to marshal_content_check.py so we don't have to
+        # check the header there again
+        check_pyc = True
     else:
-        # For .dat files, we use the same Python for content check
+        # For non-pyc files, we use the current Python for content check
         python_version_str = PYTHON_VERSION
+        check_pyc = False
+
     CHECK_CMD = [
-        "python" + python_version_str, "marshal_content_check.py", filename,
-        fixed_filename(filename)
+        "python" + python_version_str, "marshal_content_check.py",
+        str(int(check_pyc)), filename, fixed_filename(filename)
     ]
 
     check_call(CHECK_CMD)

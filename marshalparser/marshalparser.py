@@ -32,13 +32,17 @@ class MarshalParser:
         with open(filename, "rb") as fh:
             self.bytes = bytes(fh.read())
             iterator = enumerate(self.bytes)
-            # skip pyc header (first n bytes)
-            if filename.suffix == ".pyc":
-                self.python_version = get_pyc_python_version(filename)
-                pyc_header_len = get_pyc_header_lenght(self.python_version)
-
-                for x in range(pyc_header_len):
-                    next(iterator)
+        # if pyc magic number is detected, skip entire
+        # pyc header (first n bytes)
+        self.python_version = get_pyc_python_version(bytes=self.bytes[:4])
+        if self.python_version:
+            pyc_header_len = get_pyc_header_lenght(self.python_version)
+            for x in range(pyc_header_len):
+                next(iterator)
+        else:
+            # Not a pyc file, parse it as a marshal dump without header
+            if DEBUG:
+                print("File has no or unknown pyc header, assuming a marshal dump…")
 
         self.iterator = iterator
 
