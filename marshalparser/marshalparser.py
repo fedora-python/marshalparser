@@ -118,8 +118,13 @@ class MarshalParser:
         elif type in ("TYPE_INT"):
             result = self.read_long()
 
-        elif type in ("TYPE_STRING", "TYPE_UNICODE",
-                      "TYPE_ASCII", "TYPE_INTERNED"):
+        elif type in (
+            "TYPE_STRING",
+            "TYPE_UNICODE",
+            "TYPE_ASCII",
+            "TYPE_INTERNED",
+            "TYPE_ASCII_INTERNED",
+        ):
             result = self.read_string()
 
         elif type == "TYPE_SMALL_TUPLE":
