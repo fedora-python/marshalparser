@@ -22,8 +22,9 @@ def fixed_filename(original_filename):
 def clean():
     # run test first
     yield
-    for fixed_file in glob(str(Path("test") / "**" / "*.fixed.*"),
-                           recursive=True):
+    for fixed_file in glob(
+        str(Path("test") / "**" / "*.fixed.*"), recursive=True
+    ):
         os.unlink(fixed_file)
 
 
@@ -63,14 +64,17 @@ def test_complete(filename):
         check_pyc = False
 
     CHECK_CMD = [
-        "python" + python_version_str, "marshal_content_check.py",
-        str(int(check_pyc)), filename, fixed_filename(filename)
+        "python" + python_version_str,
+        "marshal_content_check.py",
+        str(int(check_pyc)),
+        filename,
+        fixed_filename(filename),
     ]
 
     check_call(CHECK_CMD)
 
 
-three_doubles = [test_data[i:i+2] for i in range(0, 6, 2)]
+three_doubles = [test_data[i : i + 2] for i in range(0, 6, 2)]
 
 
 @pytest.mark.parametrize("filenames", three_doubles)

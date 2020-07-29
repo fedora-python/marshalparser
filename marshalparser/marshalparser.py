@@ -42,7 +42,10 @@ class MarshalParser:
         else:
             # Not a pyc file, parse it as a marshal dump without header
             if DEBUG:
-                print("File has no or unknown pyc header, assuming a marshal dump…")
+                print(
+                    "File has no or unknown pyc header, "
+                    "assuming a marshal dump…"
+                )
 
         self.iterator = iterator
 
@@ -63,8 +66,10 @@ class MarshalParser:
         ref = ""
         if ref_id is not None:
             ref = f"REF[{ref_id}]"
-        line = f"n={i}/{hex(i)} byte=({byte}, {bytestring}, " \
-               f"{bin(b)}) {type} {ref}\n"
+        line = (
+            f"n={i}/{hex(i)} byte=({byte}, {bytestring}, "
+            f"{bin(b)}) {type} {ref}\n"
+        )
         if DEBUG:
             print(line)
         self.output += " " * self.indent + line
@@ -304,7 +309,7 @@ class MarshalParser:
                 # Find a new index of flag_ref after some was removed
                 new_index = flag_ref_map.index(r.index)
                 # write new number as 4-byte integer
-                content[r.byte + 1:r.byte + 5] = new_index.to_bytes(
+                content[r.byte + 1 : r.byte + 5] = new_index.to_bytes(
                     4, sys.byteorder
                 )
 

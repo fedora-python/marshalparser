@@ -8,19 +8,19 @@ def testBit(int_type, offset):
     'offset' is one.
     """
     mask = 1 << offset
-    return(int_type & mask)
+    return int_type & mask
 
 
 def setBit(int_type, offset):
     """setBit() returns an integer with the bit at 'offset' set to 1."""
     mask = 1 << offset
-    return(int_type | mask)
+    return int_type | mask
 
 
 def clearBit(int_type, offset):
     """clearBit() returns an integer with the bit at 'offset' cleared."""
     mask = ~(1 << offset)
-    return(int_type & mask)
+    return int_type & mask
 
 
 def toggleBit(int_type, offset):
@@ -29,7 +29,7 @@ def toggleBit(int_type, offset):
     'offset' inverted, 0 -> 1 and 1 -> 0.
     """
     mask = 1 << offset
-    return(int_type ^ mask)
+    return int_type ^ mask
 
 
 def bytes_to_int(bytes, signed=False):

@@ -30,7 +30,7 @@ MAGIC_NUMBERS = {
     3422: (3, 9),
     3423: (3, 9),
     3424: (3, 9),
-    3425: (3, 9)
+    3425: (3, 9),
 }
 
 
@@ -41,7 +41,7 @@ def get_pyc_python_version(*, filename=None, bytes=None):
     magic = None
 
     if filename:
-        with open(filename, 'rb') as file:
+        with open(filename, "rb") as file:
             magic = file.read(4)
     elif bytes:
         magic = bytes
@@ -49,7 +49,7 @@ def get_pyc_python_version(*, filename=None, bytes=None):
     if not magic:
         raise RuntimeError("Either filename or bytes has to be specified!")
 
-    magic_data = struct.unpack('H2B', magic)
+    magic_data = struct.unpack("H2B", magic)
     python_version = MAGIC_NUMBERS.get(magic_data[0], None)
 
     return python_version
