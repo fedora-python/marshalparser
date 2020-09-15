@@ -60,8 +60,8 @@ class MarshalParser:
         """
         Records human readable output of parsing process
         """
-        byte = binascii.hexlify(b.to_bytes(1, sys.byteorder))
-        bytestring = b.to_bytes(1, sys.byteorder)
+        byte = binascii.hexlify(b.to_bytes(1, "little"))
+        bytestring = b.to_bytes(1, "little")
         type = types[bytestring]
         ref = ""
         if ref_id is not None:
@@ -101,7 +101,7 @@ class MarshalParser:
             ref_id = len(self.flag_refs)
             self.flag_refs.append(None)
 
-        bytestring = b.to_bytes(1, sys.byteorder)
+        bytestring = b.to_bytes(1, "little")
         try:
             type = types[bytestring]
         except KeyError:
@@ -220,7 +220,7 @@ class MarshalParser:
         bytes = b""
         for x in range(count):
             index, byte = next(self.iterator)
-            byte = byte.to_bytes(1, sys.byteorder)
+            byte = byte.to_bytes(1, "little")
             bytes += byte
         return bytes
 
@@ -310,7 +310,7 @@ class MarshalParser:
                 new_index = flag_ref_map.index(r.index)
                 # write new number as 4-byte integer
                 content[r.byte + 1 : r.byte + 5] = new_index.to_bytes(
-                    4, sys.byteorder
+                    4, "little"
                 )
 
         # Skip writing if there is no difference

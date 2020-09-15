@@ -1,4 +1,3 @@
-from sys import byteorder
 import struct
 
 
@@ -33,8 +32,8 @@ def toggleBit(int_type, offset):
 
 
 def bytes_to_int(bytes, signed=False):
-    return int.from_bytes(bytes, byteorder, signed=signed)
+    return int.from_bytes(bytes, "little", signed=signed)
 
 
 def bytes_to_float(bytes):
-    return struct.unpack("d", bytes)[0]
+    return struct.unpack("<d", bytes)[0]
