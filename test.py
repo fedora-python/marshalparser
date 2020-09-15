@@ -71,7 +71,12 @@ def test_complete(filename):
         fixed_filename(filename),
     ]
 
-    check_call(CHECK_CMD)
+    try:
+        check_call(CHECK_CMD)
+    except FileNotFoundError:
+        pytest.skip(
+            f"python{python_version_str} not found! Cannot check the result."
+        )
 
 
 three_doubles = [test_data[i : i + 2] for i in range(0, 6, 2)]

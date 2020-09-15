@@ -49,7 +49,7 @@ def get_pyc_python_version(*, filename=None, bytes=None):
     if not magic:
         raise RuntimeError("Either filename or bytes has to be specified!")
 
-    magic_data = struct.unpack("H2B", magic)
+    magic_data = struct.unpack("<H2B", magic)
     python_version = MAGIC_NUMBERS.get(magic_data[0], None)
 
     return python_version
