@@ -15,7 +15,7 @@ script:
 # we add or remove a tox environment.
 matrix:
   include:
-  - env: TOXENV=py36,py37,py38,py39
+  - env: TOXENV=py36,py37,py38,py39,black
     arch: amd64
   - env: TOXENV=py36,py37,py38,py39
     arch: arm64
