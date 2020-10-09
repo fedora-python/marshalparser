@@ -53,6 +53,7 @@ class MarshalParser:
         self.references = []  # references to existing objects with FLAG_REF
         self.flag_refs = []  # objects with FLAG_REF on
         self.output = ""
+        self.statistics = ""
         self.indent = 0
         self.read_object()
 
@@ -122,6 +123,7 @@ class MarshalParser:
 
         elif type in ("TYPE_INT"):
             result = self.read_long()
+            self.statistics += f"{type},{result}\n"
 
         elif type in (
             "TYPE_STRING",
@@ -131,6 +133,7 @@ class MarshalParser:
             "TYPE_ASCII_INTERNED",
         ):
             result = self.read_string()
+            self.statistics += f"TYPE_TEXT,{len(result)}\n"
 
         elif type == "TYPE_SMALL_TUPLE":
             # small tuple — size is only one byte
@@ -140,6 +143,7 @@ class MarshalParser:
             for x in range(size):
                 result.append(self.read_object())
             result = tuple(result)
+            self.statistics += f"{type},{size}\n"
 
         elif type in ("TYPE_TUPLE", "TYPE_LIST", "TYPE_SET", "TYPE_FROZENSET"):
             # regular tuple, list, set, frozenset
@@ -175,12 +179,14 @@ class MarshalParser:
 
         elif type in ("TYPE_SHORT_ASCII_INTERNED", "TYPE_SHORT_ASCII"):
             result = self.read_string(short=True)
+            self.statistics += f"{type},{len(result)}\n"
 
         elif type == "TYPE_REF":
             index = self.read_long()
             self.references.append(Reference(byte=i, index=index))
             self.flag_refs[index].usages += 1
             result = f"REF to {index}: " + str(self.flag_refs[index])
+            self.statistics += f"{type},{index}\n"
 
         elif type == "TYPE_BINARY_FLOAT":
             result = bytes_to_float(self.read_bytes(count=8))
@@ -264,6 +270,8 @@ class MarshalParser:
         nlocals = self.read_long()
         stacksize = self.read_long()
         flags = self.read_long()
+        for name in "argcount", "posonlyargcount", "kwonlyargcount", "nlocals", "stacksize", "flags":
+            self.statistics += f"{'TYPE_CODE_' + name},{locals()[name]}\n"
         code = self.read_object()
         consts = self.read_object()
         names = self.read_object()
@@ -341,6 +349,14 @@ def main():
         help="Print human-readable parser output",
     )
     parser.add_argument(
+        "-s",
+        "--statistics",
+        action="store_true",
+        dest="statistics",
+        default=False,
+        help="Print statistics about different types",
+    )
+    parser.add_argument(
         "-u",
         "--unused",
         action="store_true",
@@ -373,6 +389,8 @@ def main():
         parser.parse()
         if args.print:
             print(parser.output)
+        if args.statistics:
+            print(parser.statistics)
         if args.unused:
             unused = parser.unused_ref_flags()
             if unused:
