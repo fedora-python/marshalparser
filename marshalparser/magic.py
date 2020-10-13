@@ -1,4 +1,5 @@
 import struct
+from typing import Optional, Tuple
 
 # Copied from CPython source code
 # Lib/importlib/_bootstrap_external.py
@@ -34,7 +35,9 @@ MAGIC_NUMBERS = {
 }
 
 
-def get_pyc_python_version(*, filename=None, bytes=None):
+def get_pyc_python_version(
+    *, filename: str = None, bytes: bytes = None
+) -> Optional[Tuple[int, int]]:
     """Get the version of Python from pyc header (magic number)
     or None if it cannot be detected. Takes a filename to read
     or first 4 bytes from it."""
@@ -55,7 +58,7 @@ def get_pyc_python_version(*, filename=None, bytes=None):
     return python_version
 
 
-def get_pyc_header_lenght(python_version):
+def get_pyc_header_lenght(python_version: Tuple[int, int]) -> int:
     """Returns pyc header lenght (number of bytes) for Python version"""
     if python_version >= (3, 7):
         return 16
