@@ -27,7 +27,7 @@ class Flag_ref:
 
 
 class MarshalParser:
-    def __init__(self, filename: Path) -> None:
+    def __init__(self, filename: Path):
         self.filename = filename
 
         with open(filename, "rb") as fh:
