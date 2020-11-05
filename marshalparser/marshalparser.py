@@ -1,6 +1,7 @@
 from collections import namedtuple
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 import argparse
 import binascii
 import sys
@@ -26,7 +27,7 @@ class Flag_ref:
 
 
 class MarshalParser:
-    def __init__(self, filename):
+    def __init__(self, filename: Path):
         self.filename = filename
 
         with open(filename, "rb") as fh:
@@ -49,14 +50,18 @@ class MarshalParser:
 
         self.iterator = iterator
 
-    def parse(self):
-        self.references = []  # references to existing objects with FLAG_REF
-        self.flag_refs = []  # objects with FLAG_REF on
+    def parse(self) -> None:
+        self.references: List[
+            Reference
+        ] = []  # references to existing objects with FLAG_REF
+        self.flag_refs: List[Flag_ref] = []  # objects with FLAG_REF on
         self.output = ""
         self.indent = 0
         self.read_object()
 
-    def record_object_start(self, i, b, ref_id):
+    def record_object_start(
+        self, i: int, b: int, ref_id: Optional[int]
+    ) -> None:
         """
         Records human readable output of parsing process
         """
@@ -67,28 +72,28 @@ class MarshalParser:
         if ref_id is not None:
             ref = f"REF[{ref_id}]"
         line = (
-            f"n={i}/{hex(i)} byte=({byte}, {bytestring}, "
+            f"n={i}/{hex(i)} byte=({byte!r}, {bytestring!r}, "
             f"{bin(b)}) {type} {ref}\n"
         )
         if DEBUG:
             print(line)
         self.output += " " * self.indent + line
 
-    def record_object_result(self, result):
+    def record_object_result(self, result: Any) -> None:
         """
         Records the result of object parsing with its type
         """
         line = f"result={result}, type={type(result)}\n"
         self.output += " " * self.indent + line
 
-    def record_object_info(self, info):
+    def record_object_info(self, info: str) -> None:
         """
         Records some info about parsed object
         """
         line = f"{info}\n"
         self.output += " " * self.indent + line
 
-    def read_object(self):
+    def read_object(self) -> Any:
         """
         Main method for reading/parsing objects and recording references.
         Simple objects are parsed directly, complex uses other read_* methods
@@ -99,13 +104,15 @@ class MarshalParser:
             b = clearBit(b, 7)
             # Save a slot in global references
             ref_id = len(self.flag_refs)
-            self.flag_refs.append(None)
+            self.flag_refs.append(None)  # type: ignore
 
         bytestring = b.to_bytes(1, "little")
         try:
             type = types[bytestring]
         except KeyError:
-            print(f"Cannot read/parse byte {b} {bytestring} on possition {i}")
+            print(
+                f"Cannot read/parse byte {b!r} {bytestring!r} on possition {i}"
+            )
             print("Might be error or unsupported TYPE")
             print(self.output)
             sys.exit(1)
@@ -113,6 +120,8 @@ class MarshalParser:
 
         # Increase indentation
         self.indent += 2
+
+        result: Any
 
         if type == "TYPE_CODE":
             result = self.read_codeobject()
@@ -216,15 +225,15 @@ class MarshalParser:
 
         return result
 
-    def read_bytes(self, count=1):
+    def read_bytes(self, count: int = 1) -> bytes:
         bytes = b""
         for x in range(count):
-            index, byte = next(self.iterator)
-            byte = byte.to_bytes(1, "little")
+            index, int_byte = next(self.iterator)
+            byte = int_byte.to_bytes(1, "little")
             bytes += byte
         return bytes
 
-    def read_string(self, size=None, short=False):
+    def read_string(self, size: int = None, short: bool = False) -> bytes:
         if size is None:
             if short:
                 # short == size is stored as one byte
@@ -235,11 +244,11 @@ class MarshalParser:
         bytes = self.read_bytes(size)
         return bytes
 
-    def read_long(self, signed=False):
+    def read_long(self, signed: bool = False) -> int:
         bytes = self.read_bytes(count=4)
         return bytes_to_int(bytes, signed=signed)
 
-    def read_short(self):
+    def read_short(self) -> int:
         b = self.read_bytes(count=2)
         x = b[0]
         x |= b[1] << 8
@@ -247,7 +256,7 @@ class MarshalParser:
         x |= -(x & 0x8000)
         return x
 
-    def read_py_long(self):
+    def read_py_long(self) -> int:
         n = self.read_long(signed=True)
         result, shift = 0, 0
         for i in range(abs(n)):
@@ -256,9 +265,9 @@ class MarshalParser:
 
         return result if n > 0 else -result
 
-    def read_codeobject(self):
+    def read_codeobject(self) -> Dict[str, Any]:
         argcount = self.read_long()
-        if self.python_version >= (3, 8):
+        if self.python_version is not None and self.python_version >= (3, 8):
             posonlyargcount = self.read_long()
         kwonlyargcount = self.read_long()
         nlocals = self.read_long()
@@ -280,16 +289,16 @@ class MarshalParser:
 
         return co
 
-    def unused_ref_flags(self):
+    def unused_ref_flags(self) -> List[Tuple[int, Flag_ref]]:
         unused = []
         for index, flag_ref in enumerate(self.flag_refs):
             if flag_ref.usages == 0:
                 unused.append((index, flag_ref))
         return unused
 
-    def clear_unused_ref_flags(self, overwrite=False):
+    def clear_unused_ref_flags(self, overwrite: bool = False) -> None:
         # List of flag_refs and references ordered by number of byte in a file
-        final_list = self.flag_refs + self.references
+        final_list = self.flag_refs + self.references  # type: ignore
         final_list.sort(key=lambda x: x.byte)
         # a map where at a beginning, index in list == number of flag_ref
         # but when unused flag is removed:
@@ -328,11 +337,11 @@ class MarshalParser:
             print("Content is the same, nothing to fix…")
 
 
-def main():
-    parser = argparse.ArgumentParser(
+def main() -> None:
+    arg_parser = argparse.ArgumentParser(
         description="Marshalparser and fixer for .pyc files"
     )
-    parser.add_argument(
+    arg_parser.add_argument(
         "-p",
         "--print",
         action="store_true",
@@ -340,7 +349,7 @@ def main():
         default=False,
         help="Print human-readable parser output",
     )
-    parser.add_argument(
+    arg_parser.add_argument(
         "-u",
         "--unused",
         action="store_true",
@@ -348,7 +357,7 @@ def main():
         default=False,
         help="Print unused references",
     )
-    parser.add_argument(
+    arg_parser.add_argument(
         "-f",
         "--fix",
         action="store_true",
@@ -356,7 +365,7 @@ def main():
         default=False,
         help="Fix references",
     )
-    parser.add_argument(
+    arg_parser.add_argument(
         "-o",
         "--overwrite",
         action="store_true",
@@ -364,9 +373,9 @@ def main():
         default=False,
         help="Overwrite existing pyc file (works with --fix)",
     )
-    parser.add_argument(metavar="files", dest="files", nargs="*")
+    arg_parser.add_argument(metavar="files", dest="files", nargs="*")
 
-    args = parser.parse_args()
+    args = arg_parser.parse_args()
 
     for file in args.files:
         parser = MarshalParser(Path(file))
