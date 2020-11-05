@@ -213,9 +213,13 @@ class MarshalParser:
         try:
             self.record_object_result(result)
         except UnboundLocalError:
-            raise RuntimeError(
-                f"Error: type [{type}] is recognized but result is not present"
-            )
+            message = f"type [{type}] is recognized but result is not present."
+            if not self.python_version:
+                message += (
+                    "\nThe error is probably caused by an unknown "
+                    "Python version (magic number) if it's a pyc file."
+                )
+            raise RuntimeError(message) from None
 
         # Save the result to the self.references
         if ref_id is not None:
