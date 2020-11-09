@@ -17,7 +17,7 @@ matrix:
   include:
   - env: TOXENV=py36,py37,py38,py39,py310,black,mypy
     arch: amd64
-  - env: TOXENV=py36,py37,py38,py39,py310
+  - env: TOXENV=py36,py38,py39,py310
     arch: arm64
   - env: TOXENV=py36,py37,py38,py39,py310
     arch: ppc64le
