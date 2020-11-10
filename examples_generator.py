@@ -14,7 +14,7 @@ data = {
     "nested_tuples": (),
 }
 
-for i in range(100):
+for i in range(25):
     data['nested_tuples'] = (data['nested_tuples'], data['nested_tuples'])
 
 for key, value in data.items():
