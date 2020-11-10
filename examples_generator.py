@@ -11,7 +11,11 @@ data = {
     "dict": dict(a=1, b=2, c=3),
     "complex": complex(15, 2),
     "frozenset": frozenset((99, 999, 9999)),
+    "nested_tuples": (),
 }
+
+for i in range(100):
+    data['nested_tuples'] = (data['nested_tuples'], data['nested_tuples'])
 
 for key, value in data.items():
     with open(f"test/pure_marshal/{key}.dat", mode="wb") as fh:
