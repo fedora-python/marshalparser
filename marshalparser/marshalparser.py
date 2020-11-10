@@ -192,7 +192,7 @@ class MarshalParser:
             if len(str(self.flag_refs[index])) > 500:
                 result = (f"REF to {index} (value omitted)")
             else:
-                result = (f"REF to {index}:", self.flag_refs[index])
+                result = (f"REF to {index}: {self.flag_refs[index]}")
 
         elif type == "TYPE_BINARY_FLOAT":
             result = bytes_to_float(self.read_bytes(count=8))
