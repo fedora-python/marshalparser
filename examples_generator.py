@@ -15,7 +15,7 @@ data = {
 }
 
 for i in range(25):
-    data['nested_tuples'] = (data['nested_tuples'], data['nested_tuples'])
+    data["nested_tuples"] = (data["nested_tuples"], data["nested_tuples"])
 
 for key, value in data.items():
     with open(f"test/pure_marshal/{key}.dat", mode="wb") as fh:
