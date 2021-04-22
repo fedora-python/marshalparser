@@ -1,46 +1,33 @@
 import struct
+from functools import lru_cache
 from typing import Optional, Tuple
 
-# Copied from CPython source code
+
+def inclusive_range(f: int, t: int) -> range:
+    """Returns range including both ends"""
+    return range(f, t + 1)
+
+
+# Based on CPython source code
 # Lib/importlib/_bootstrap_external.py
-MAGIC_NUMBERS = {
-    3360: (3, 6),
-    3361: (3, 6),
-    3370: (3, 6),
-    3371: (3, 6),
-    3372: (3, 6),
-    3373: (3, 6),
-    3375: (3, 6),
-    3376: (3, 6),
-    3377: (3, 6),
-    3378: (3, 6),
-    3379: (3, 6),
-    3390: (3, 7),
-    3391: (3, 7),
-    3392: (3, 7),
-    3393: (3, 7),
-    3394: (3, 7),
-    3400: (3, 8),
-    3401: (3, 8),
-    3410: (3, 8),
-    3411: (3, 8),
-    3412: (3, 8),
-    3413: (3, 8),
-    3420: (3, 9),
-    3421: (3, 9),
-    3422: (3, 9),
-    3423: (3, 9),
-    3424: (3, 9),
-    3425: (3, 9),
-    3430: (3, 10),
-    3431: (3, 10),
-    3432: (3, 10),
-    3433: (3, 10),  # ← the last really known in the time of the release
-    3434: (3, 10),
-    3435: (3, 10),
-    3436: (3, 10),
-    3437: (3, 10),
-}
+MAGIC_NUMBERS_RANGES = (
+    (inclusive_range(3360, 3361), (3, 6)),
+    (inclusive_range(3370, 3379), (3, 6)),
+    (inclusive_range(3390, 3394), (3, 7)),
+    (inclusive_range(3400, 3401), (3, 8)),
+    (inclusive_range(3410, 3413), (3, 8)),
+    (inclusive_range(3420, 3425), (3, 9)),
+    # This range has to be adjusted when the final release is out
+    (inclusive_range(3430, 3500), (3, 10)),
+)
+
+
+@lru_cache()
+def python_version_from_magic_number(number: int) -> Optional[Tuple[int, int]]:
+    for numbers_range, version in MAGIC_NUMBERS_RANGES:
+        if number in numbers_range:
+            return version
+    return None
 
 
 def get_pyc_python_version(
@@ -61,7 +48,7 @@ def get_pyc_python_version(
         raise RuntimeError("Either filename or bytes has to be specified!")
 
     magic_data = struct.unpack("<H2B", magic)
-    python_version = MAGIC_NUMBERS.get(magic_data[0], None)
+    python_version = python_version_from_magic_number(magic_data[0])
 
     return python_version
 
