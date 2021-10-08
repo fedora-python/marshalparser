@@ -315,12 +315,14 @@ class MarshalParser:
         # new mutable content
         content = bytearray(self.bytes)
 
+        removed_count = 0
         for r in final_list:
             if isinstance(r, Flag_ref) and r.usages == 0:
                 # Clear FLAG_REF bit and remove it from map
                 # all subsequent refs will have lower index in the map
                 flag_ref_map.remove(self.flag_refs.index(r))
                 content[r.byte] = clearBit(content[r.byte], 7)
+                removed_count += 1
             elif isinstance(r, Reference):
                 # Find a new index of flag_ref after some was removed
                 new_index = flag_ref_map.index(r.index)
@@ -337,11 +339,12 @@ class MarshalParser:
                 suffix = ".fixed"
 
             new_name = self.filename.with_suffix(suffix + self.filename.suffix)
+            print(f"Removed {removed_count} unused FLAG_REFs from {new_name}")
 
             with open(new_name, mode="wb") as fh:
                 fh.write(content)
         else:
-            print("Content is the same, nothing to fix…")
+            print(f"No unused FLAG_REFs in {self.filename}")
 
 
 def main() -> None:
