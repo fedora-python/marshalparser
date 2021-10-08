@@ -1,6 +1,6 @@
 from glob import glob
 from pathlib import Path
-from subprocess import check_call
+from subprocess import check_call, check_output
 import filecmp
 import os
 import sys
@@ -43,12 +43,17 @@ def test_complete(filename):
     # This command uses the Python we are testing with
     # because for example we can run marshalparser with
     # Python 3.9 and fix pyc file for Python 3.6
-    check_call(CMD + [filename])
+    output = check_output(CMD + [filename], encoding="utf-8")
 
     assert os.path.isfile(fixed_filename(filename))
 
     if filecmp.cmp(filename, fixed_filename(filename), shallow=False):
         pytest.skip("Fixed file is the same as original, nothing to check")
+
+    assert output.endswith(
+        f" unused FLAG_REFs from {fixed_filename(filename)}\n"
+    )
+    assert output[:8] == "Removed "
 
     # To compare two pyc files, we need to use Python
     # they were compiled by
@@ -77,6 +82,14 @@ def test_complete(filename):
         pytest.skip(
             f"python{python_version_str} not found! Cannot check the result."
         )
+
+    # Fixing the already fixed file should make no changes
+    again_output = check_output(
+        CMD + ["-o", fixed_filename(filename)], encoding="utf-8"
+    )
+    assert (
+        again_output == f"No unused FLAG_REFs in {fixed_filename(filename)}\n"
+    )
 
 
 three_doubles = [test_data[i : i + 2] for i in range(0, 6, 2)]
