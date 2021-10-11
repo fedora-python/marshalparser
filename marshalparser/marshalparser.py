@@ -32,6 +32,8 @@ class MarshalParser:
 
         with open(filename, "rb") as fh:
             self.bytes = bytes(fh.read())
+            if len(self.bytes) < 4:
+                raise RuntimeError(f"File {self.filename} is empty!")
             iterator = enumerate(self.bytes)
         # if pyc magic number is detected, skip entire
         # pyc header (first n bytes)
