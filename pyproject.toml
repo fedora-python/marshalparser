@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 line-length = 79
 target-version = ['py36', 'py37', 'py38']
 # Everything else is ignored via .gitignore
-exclude = '''
+extend-exclude = '''
 /(
     \.git
   | test/renamed_pycs
