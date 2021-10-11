@@ -31,13 +31,12 @@ def python_version_from_magic_number(number: int) -> Optional[Tuple[int, int]]:
 
 
 def get_pyc_python_version(
-    *, filename: str = None, bytes: bytes = None
+    *, filename: Optional[str] = None, bytes: Optional[bytes] = None
 ) -> Optional[Tuple[int, int]]:
     """Get the version of Python from pyc header (magic number)
     or None if it cannot be detected. Takes a filename to read
     or first 4 bytes from it."""
     magic = None
-
     if filename:
         with open(filename, "rb") as file:
             magic = file.read(4)

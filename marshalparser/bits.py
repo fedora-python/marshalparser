@@ -36,4 +36,4 @@ def bytes_to_int(bytes: bytes, signed: bool = False) -> int:
 
 
 def bytes_to_float(bytes: bytes) -> float:
-    return struct.unpack("<d", bytes)[0]
+    return float(struct.unpack("<d", bytes)[0])

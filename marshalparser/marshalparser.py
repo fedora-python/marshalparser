@@ -240,7 +240,9 @@ class MarshalParser:
             bytes += byte
         return bytes
 
-    def read_string(self, size: int = None, short: bool = False) -> bytes:
+    def read_string(
+        self, size: Optional[int] = None, short: bool = False
+    ) -> bytes:
         if size is None:
             if short:
                 # short == size is stored as one byte
