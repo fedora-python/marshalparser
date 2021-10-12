@@ -1,9 +1,8 @@
-from glob import glob
-from pathlib import Path
-from subprocess import check_call, check_output
 import filecmp
 import os
 import sys
+from pathlib import Path
+from subprocess import STDOUT, CalledProcessError, check_call, check_output
 
 import pytest
 
@@ -18,28 +17,21 @@ def fixed_filename(original_filename):
     return original_filename.with_suffix(".fixed" + original_filename.suffix)
 
 
-@pytest.fixture(autouse=True)
-def clean():
-    # run test first
-    yield
-    for fixed_file in glob(
-        str(Path("test") / "**" / "*.fixed.*"), recursive=True
-    ):
-        os.unlink(fixed_file)
-
-
 def generate_test_data():
-    python_stdlib = glob(str(Path("test") / "python_stdlib" / "*" / "*.pyc"))
-    pure_marshal = glob(str(Path("test") / "pure_marshal" / "*"))
-    renamed_pycs = glob(str(Path("test") / "renamed_pycs" / "*"))
-    return pure_marshal + renamed_pycs + python_stdlib
+    yield from (Path("test") / "python_stdlib").glob("**/*.pyc")
+    yield from (Path("test") / "pure_marshal").glob("*")
+    yield from (Path("test") / "renamed_pycs").glob("*")
 
 
-test_data = generate_test_data()
+@pytest.mark.parametrize("original_filename", generate_test_data())
+def test_complete(original_filename, tmp_path):
+    # To be able to run tests in parallel, we create
+    # a symlink for each test file so the fixed file appears
+    # next to the symlink in the temp dir instead of the
+    # test folder next to the original files.
+    filename = tmp_path / original_filename.name
+    filename.symlink_to(original_filename.absolute())
 
-
-@pytest.mark.parametrize("filename", test_data)
-def test_complete(filename):
     # This command uses the Python we are testing with
     # because for example we can run marshalparser with
     # Python 3.9 and fix pyc file for Python 3.6
@@ -92,9 +84,24 @@ def test_complete(filename):
     )
 
 
-three_doubles = [test_data[i : i + 2] for i in range(0, 6, 2)]
+test_files = sorted((Path("test") / "renamed_pycs").glob("*"))
+three_doubles = [(test_files[n], test_files[n + 1]) for n in range(0, 6, 2)]
 
 
-@pytest.mark.parametrize("filenames", three_doubles)
-def test_run_with_more_than_one_file(filenames):
+@pytest.mark.parametrize("original_filenames", three_doubles)
+def test_run_with_more_than_one_file(original_filenames, tmp_path):
+    filenames = []
+    for original_filename in original_filenames:
+        filename = tmp_path / original_filename.name
+        filename.symlink_to(original_filename.absolute())
+        filenames.append(filename)
     check_call(CMD + [*filenames])
+
+
+def test_empty_file(tmp_path):
+    filename = tmp_path / "empty_file.pyc"
+    filename.touch()
+    with pytest.raises(CalledProcessError) as e:
+        check_output(CMD + [filename], encoding="utf-8", stderr=STDOUT)
+    assert e.value.returncode == 1
+    assert f"File {filename} is empty!" in e.value.output
