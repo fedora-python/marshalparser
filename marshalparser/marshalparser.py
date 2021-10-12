@@ -1,13 +1,13 @@
+import argparse
+import binascii
+import sys
 from collections import namedtuple
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
-import argparse
-import binascii
-import sys
 
-from .bits import testBit, clearBit, bytes_to_float, bytes_to_int
-from .magic import get_pyc_python_version, get_pyc_header_lenght
+from .bits import bytes_to_float, bytes_to_int, clearBit, testBit
+from .magic import get_pyc_header_lenght, get_pyc_python_version
 from .object_types import types
 
 PyLong_MARSHAL_SHIFT = 15
