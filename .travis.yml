@@ -9,7 +9,7 @@ before_install:
   - docker images
 
 script:
-  - docker run --rm -v $PWD:/src -w /src -e TOXENV fedorapython/fedora-python-tox
+  - docker run --rm -v $PWD:/src -w /src -e TOX_PARAMS="-p auto" -e TOXENV fedorapython/fedora-python-tox
 
 # Unfortunately, this matrix has to updated manually every time
 # we add or remove a tox environment.
