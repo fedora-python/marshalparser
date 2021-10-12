@@ -274,27 +274,82 @@ class MarshalParser:
 
         return result if n > 0 else -result
 
-    def read_codeobject(self) -> Dict[str, Any]:
-        argcount = self.read_long()
-        if self.python_version is not None and self.python_version >= (3, 8):
-            posonlyargcount = self.read_long()
-        kwonlyargcount = self.read_long()
-        nlocals = self.read_long()
-        stacksize = self.read_long()
-        flags = self.read_long()
-        code = self.read_object()
-        consts = self.read_object()
-        names = self.read_object()
-        varnames = self.read_object()
-        freevars = self.read_object()
-        cellvars = self.read_object()
-        filename = self.read_object()
-        name = self.read_object()
-        firstlineno = self.read_long()
-        lnotab = self.read_object()
+    def set_codeobject_structure(self) -> None:
+        """Sets self.codeobject_structure representing codeobject
+        structure for given Python version"""
 
-        co = dict(locals())
-        del co["self"]  # removed Marshalparser instance from co
+        if (
+            hasattr(self, "codeobject_structure")
+            or self.python_version is None
+        ):
+            return
+
+        # Contains all possible code object attributes
+        # and their respective methods for parsing them
+        structure = [
+            ("argcount", self.read_long),
+            ("posonlyargcount", self.read_long),
+            ("kwonlyargcount", self.read_long),
+            ("nlocals", self.read_long),
+            ("stacksize", self.read_long),
+            ("flags", self.read_long),
+            ("code", self.read_object),
+            ("consts", self.read_object),
+            ("names", self.read_object),
+            ("varnames", self.read_object),
+            ("freevars", self.read_object),
+            ("cellvars", self.read_object),
+            ("localsplusnames", self.read_object),
+            ("localspluskinds", self.read_object),
+            ("filename", self.read_object),
+            ("name", self.read_object),
+            ("qualname", self.read_object),
+            ("firstlineno", self.read_long),
+            ("linetable", self.read_object),
+            ("endlinetable", self.read_object),
+            ("columntable", self.read_object),
+            ("exceptiontable", self.read_object),
+        ]
+
+        self.codeobject_structure = []
+
+        # Skips specific attributes based on Python version
+        for name, method in structure:
+            if self.python_version < (3, 11):
+                # Available in 3.11+
+                if name in (
+                    "localsplusnames",
+                    "localspluskinds",
+                    "qualname",
+                    "endlinetable",
+                    "columntable",
+                    "exceptiontable",
+                ):
+                    continue
+            else:
+                # Removed in 3.11
+                if name in ("nlocals", "varnames", "freevars", "cellvars"):
+                    continue
+
+            if self.python_version < (3, 8):
+                # Available in 3.8+
+                if name == "posonlyargcount":
+                    continue
+
+            self.codeobject_structure.append((name, method))
+
+        if DEBUG:
+            from pprint import pprint
+
+            print("Codeobject structure:")
+            pprint(self.codeobject_structure)
+
+    def read_codeobject(self) -> Dict[str, Any]:
+        self.set_codeobject_structure()
+
+        co = dict()
+        for name, method in self.codeobject_structure:
+            co[name] = method()  # type: ignore
 
         return co
 
