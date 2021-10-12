@@ -17,8 +17,9 @@ MAGIC_NUMBERS_RANGES = (
     (inclusive_range(3400, 3401), (3, 8)),
     (inclusive_range(3410, 3413), (3, 8)),
     (inclusive_range(3420, 3425), (3, 9)),
+    (inclusive_range(3430, 3439), (3, 10)),
     # This range has to be adjusted when the final release is out
-    (inclusive_range(3430, 3500), (3, 10)),
+    (inclusive_range(3450, 3500), (3, 11)),
 )
 
 
