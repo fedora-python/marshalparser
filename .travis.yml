@@ -15,11 +15,14 @@ script:
 # we add or remove a tox environment.
 matrix:
   include:
-  - env: TOXENV=py36,py37,py38,py39,py310,black,mypy
+  - env: TOXENV=py36,py37,py38,py39,py310,py311,black,mypy
     arch: amd64
-  - env: TOXENV=py36,py38,py39,py310
+  # Arm is slow so we use two separated jobs for it
+  - env: TOXENV=py36,py37,py38
     arch: arm64
-  - env: TOXENV=py36,py37,py38,py39,py310
+  - env: TOXENV=py39,py310,py311
+    arch: arm64
+  - env: TOXENV=py36,py37,py38,py39,py310,py311
     arch: ppc64le
-  - env: TOXENV=py36,py37,py38,py39,py310
+  - env: TOXENV=py36,py37,py38,py39,py310,py311
     arch: s390x
