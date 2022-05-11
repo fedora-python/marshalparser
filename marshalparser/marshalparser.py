@@ -308,8 +308,6 @@ class MarshalParser:
             ("qualname", self.read_object),
             ("firstlineno", self.read_long),
             ("linetable", self.read_object),
-            ("endlinetable", self.read_object),
-            ("columntable", self.read_object),
             ("exceptiontable", self.read_object),
         ]
 
@@ -323,8 +321,6 @@ class MarshalParser:
                     "localsplusnames",
                     "localspluskinds",
                     "qualname",
-                    "endlinetable",
-                    "columntable",
                     "exceptiontable",
                 ):
                     continue
