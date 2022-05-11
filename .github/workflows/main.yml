@@ -1,0 +1,37 @@
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+name: Run Tox tests
+
+jobs:
+  tox_test:
+    name: Tox test
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+    - name: Run tests in container
+      run: |
+        docker run --platform linux/${{ matrix.arch }} -v ${{ github.workspace }}:/src -w /src -e TOX_PARAMS="-p auto" -e TOXENV=${{ matrix.toxenv }} fedorapython/fedora-python-tox:latest
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            toxenv: py36,py37,py38,py39,py310,py311,black,mypy
+          - arch: arm64
+            toxenv: py36,py37,py38
+          - arch: arm64
+            toxenv: py39,py310,py311
+          - arch: ppc64le
+            toxenv: py36,py37,py38,py39,py310,py311
+          - arch: s390x
+            toxenv: py36,py37,py38,py39,py310,py311
+
+    # Use GitHub's Linux Docker host
+    runs-on: ubuntu-latest
