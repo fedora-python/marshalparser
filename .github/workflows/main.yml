@@ -25,11 +25,17 @@ jobs:
           - arch: amd64
             toxenv: py36,py37,py38,py39,py310,py311,black,mypy
           - arch: arm64
-            toxenv: py36,py37,py38
+            toxenv: py36
           - arch: arm64
-            toxenv: py39,py310,py311
+            toxenv: py37
+          - arch: arm64
+            toxenv: py38,py39
+          - arch: arm64
+            toxenv: py310,py311
           - arch: ppc64le
-            toxenv: py36,py37,py38,py39,py310,py311
+            toxenv: py36,py37,py38
+          - arch: ppc64le
+            toxenv: py39,py310,py311
           - arch: s390x
             toxenv: py36,py37,py38,py39,py310,py311
 
