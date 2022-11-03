@@ -360,7 +360,7 @@ class MarshalParser:
 
     def clear_unused_ref_flags(self, overwrite: bool = False) -> None:
         # List of flag_refs and references ordered by number of byte in a file
-        final_list = self.flag_refs + self.references  # type: ignore
+        final_list = self.flag_refs + self.references
         final_list.sort(key=lambda x: x.byte)
         # a map where at a beginning, index in list == number of flag_ref
         # but when unused flag is removed:
