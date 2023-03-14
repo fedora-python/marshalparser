@@ -17,10 +17,32 @@ def fixed_filename(original_filename):
     return original_filename.with_suffix(".fixed" + original_filename.suffix)
 
 
+def param(p, *, skip_reason=None):
+    """Return a pytest.param with stringified id, for nicer verbose output
+
+    When skip_reson is set, the pytest.param will be marked as skipped."""
+    if skip_reason is None:
+        return pytest.param(p, id=str(p))
+    return pytest.param(p,
+                        id=str(p),
+                        marks=[pytest.mark.skip(reason=skip_reason)])
+
+
 def generate_test_data():
-    yield from (Path("test") / "python_stdlib").glob("**/*.pyc")
-    yield from (Path("test") / "pure_marshal").glob("*")
-    yield from (Path("test") / "renamed_pycs").glob("*")
+    for python_version_dir in (Path("test") / "python_stdlib").glob("*"):
+        python_version = python_version_dir.name
+        try:
+            check_call(("python" + python_version, "-c", "pass"))
+        except FileNotFoundError:
+            skip_reason = f"python{python_version} not found"
+        else:
+            skip_reason = None
+        yield from (
+            param(p, skip_reason=skip_reason)
+            for p in python_version_dir.glob("*.pyc")
+        )
+    yield from (param(p) for p in (Path("test") / "pure_marshal").glob("*"))
+    yield from (param(p) for p in (Path("test") / "renamed_pycs").glob("*"))
 
 
 @pytest.mark.parametrize("original_filename", generate_test_data())
@@ -71,6 +93,7 @@ def test_complete(original_filename, tmp_path):
     try:
         check_call(CHECK_CMD)
     except FileNotFoundError:
+        # this could still happen with test/renamed_pycs
         pytest.skip(
             f"python{python_version_str} not found! Cannot check the result."
         )
