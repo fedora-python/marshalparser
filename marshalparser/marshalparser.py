@@ -53,9 +53,9 @@ class MarshalParser:
         self.iterator = iterator
 
     def parse(self) -> None:
-        self.references: List[
-            Reference
-        ] = []  # references to existing objects with FLAG_REF
+        self.references: List[Reference] = (
+            []
+        )  # references to existing objects with FLAG_REF
         self.flag_refs: List[Flag_ref] = []  # objects with FLAG_REF on
         self.output = ""
         self.indent = 0

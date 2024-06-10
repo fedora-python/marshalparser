@@ -23,9 +23,9 @@ def param(p, *, skip_reason=None):
     When skip_reson is set, the pytest.param will be marked as skipped."""
     if skip_reason is None:
         return pytest.param(p, id=str(p))
-    return pytest.param(p,
-                        id=str(p),
-                        marks=[pytest.mark.skip(reason=skip_reason)])
+    return pytest.param(
+        p, id=str(p), marks=[pytest.mark.skip(reason=skip_reason)]
+    )
 
 
 def generate_test_data():
