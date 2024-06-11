@@ -22,7 +22,8 @@ MAGIC_NUMBERS_RANGES = (
     (inclusive_range(3500, 3531), (3, 12)),
     # These ranges have to be adjusted when the final releases are out
     (inclusive_range(3550, 3599), (3, 13)),
-    (inclusive_range(3600, 3649), (3, 14)),
+    (inclusive_range(3600, 3699), (3, 14)),
+    (inclusive_range(3700, 3799), (3, 15)),
 )
 
 
