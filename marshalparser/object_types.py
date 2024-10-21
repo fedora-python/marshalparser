@@ -23,6 +23,7 @@ types = {
     b"?": "TYPE_UNKNOWN",
     b"<": "TYPE_SET",
     b">": "TYPE_FROZENSET",
+    b":": "TYPE_SLICE",
     b"a": "TYPE_ASCII",
     b"A": "TYPE_ASCII_INTERNED",
     b")": "TYPE_SMALL_TUPLE",
