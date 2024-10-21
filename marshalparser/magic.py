@@ -9,7 +9,7 @@ def inclusive_range(f: int, t: int) -> range:
 
 
 # Based on CPython source code
-# Lib/importlib/_bootstrap_external.py
+# Include/internal/pycore_magic_number.h
 MAGIC_NUMBERS_RANGES = (
     (inclusive_range(3360, 3361), (3, 6)),
     (inclusive_range(3370, 3379), (3, 6)),
@@ -20,10 +20,10 @@ MAGIC_NUMBERS_RANGES = (
     (inclusive_range(3430, 3439), (3, 10)),
     (inclusive_range(3450, 3495), (3, 11)),
     (inclusive_range(3500, 3531), (3, 12)),
+    (inclusive_range(3550, 3571), (3, 13)),
     # These ranges have to be adjusted when the final releases are out
-    (inclusive_range(3550, 3599), (3, 13)),
-    (inclusive_range(3600, 3699), (3, 14)),
-    (inclusive_range(3700, 3799), (3, 15)),
+    (inclusive_range(3600, 3649), (3, 14)),
+    (inclusive_range(3650, 3699), (3, 15)),
 )
 
 
