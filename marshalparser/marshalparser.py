@@ -166,6 +166,12 @@ class MarshalParser:
             elif type == "TYPE_FROZENSET":
                 result = frozenset(result)
 
+        elif type == "TYPE_SLICE":
+            start = self.read_object()
+            stop = self.read_object()
+            step = self.read_object()
+            result = slice(start, stop, step)
+
         elif type == "TYPE_NULL":
             result = "null"
 
