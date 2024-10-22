@@ -142,6 +142,7 @@ Python 3.6 itself requires [`dataclasses`](https://pypi.org/project/dataclasses/
 * ? TYPE_UNKNOWN (no idea how to test unknown bytes-like objects as a bytes object)
 * ✓ TYPE_SET
 * ✓ TYPE_FROZENSET
+* ✓ TYPE_SLICE
 * ✓ FLAG_REF (recognized as a flag for all complex types)
 * ✓ TYPE_ASCII
 * ✓ TYPE_ASCII_INTERNED
