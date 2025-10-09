@@ -113,7 +113,7 @@ class MarshalParser:
             type = types[bytestring]
         except KeyError:
             print(
-                f"Cannot read/parse byte {b!r} {bytestring!r} on possition {i}"
+                f"Cannot read/parse byte {b!r} {bytestring!r} on position {i}"
             )
             print("Might be error or unsupported TYPE")
             print(self.output)
