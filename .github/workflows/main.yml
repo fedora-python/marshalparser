@@ -16,6 +16,10 @@ jobs:
       uses: actions/checkout@v2
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v2
+    - name: Setup tox for end-of-life Python versions
+      if: ${{ matrix.legacy }}
+      run: |
+        sed -i '/\[tox\]/a requires = virtualenv<20.22.0' tox.ini
     - name: Run tests in container
       run: |
         docker run --platform linux/${{ matrix.arch }} -v ${{ github.workspace }}:/src -w /src -e TOX_PARALLEL_NO_SPINNER=1 -e TOX_PARAMS="-p auto" -e TOXENV=${{ matrix.toxenv }} fedorapython/fedora-python-tox:latest
@@ -23,19 +27,28 @@ jobs:
       matrix:
         include:
           - arch: amd64
-            toxenv: py36,py39,py310,py311,py312,py313,py314,py315,black,mypy
+            toxenv: py39,py310,py311,py312,py313,py314,py315,black,mypy
+          - arch: amd64
+            toxenv: py36
+            legacy: true
           - arch: arm64
             toxenv: py36
+            legacy: true
           - arch: arm64
             toxenv: py39
           - arch: arm64
             toxenv: py310,py311
           - arch: ppc64le
+            legacy: true
             toxenv: py36
           - arch: ppc64le
+            legacy: true
             toxenv: py39,py310,py311
           - arch: s390x
-            toxenv: py36,py39,py310,py311
+            toxenv: py39,py310,py311
+          - arch: s390x
+            toxenv: py36
+            legacy: true
 
     # Use GitHub's Linux Docker host
     runs-on: ubuntu-latest
