@@ -39,10 +39,9 @@ jobs:
           - arch: arm64
             toxenv: py310,py311
           - arch: ppc64le
-            legacy: true
             toxenv: py36
-          - arch: ppc64le
             legacy: true
+          - arch: ppc64le
             toxenv: py39,py310,py311
           - arch: s390x
             toxenv: py39,py310,py311
